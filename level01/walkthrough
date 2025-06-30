@@ -69,7 +69,10 @@ Avec un pattern ou un script, on trouve :
 ```
 ./level01
 Enter Username: dat_wil
-Enter Password: AAAAAAAAAAA... (100 caractères)
+Enter Password: AAAAAAAAAAA... (80 caractères)
+```
+
+plus rapide :
 ```
 
 ```

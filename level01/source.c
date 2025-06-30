@@ -45,7 +45,7 @@ int main(void) {
         // Vérification du mot de passe
         valid = verify_user_pass(local_54);
 
-        // Ce test est bizarrement structuré mais toujours affiche un échec :
+        // bizarre mais instruction toujours vraie :
         if ((valid == 0) || (valid != 0)) {
             puts("nope, incorrect password...\n");
             return 1;
