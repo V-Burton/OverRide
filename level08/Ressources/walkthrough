@@ -1,0 +1,86 @@
+## Walkthrough Level08
+
+### 1. Analyse du programme
+
+On dispose d'un exécutable qui prend un nom de fichier en argument. Léxecutable `level08` possède les droits de level09. Après décompilation, on comprend que le programme :
+
+- Ouvre un fichier de log `./backups/.log` pour y écrire des messages.
+- Ouvre le fichier passé en argument (ex : `mon_fichier.txt`) en lecture.
+- Construit un chemin de destination en concaténant `./backups/` et l'argument fourni.
+- Crée ce fichier de destination (dans `./backups/`), puis copie le contenu du fichier source dedans, caractère par caractère.
+- Log le début et la fin de la sauvegarde dans le fichier `.log`.
+
+**Résumé du fonctionnement** :  
+`./level08 mon_fichier.txt` va copier `mon_fichier.txt` vers `./backups/mon_fichier.txt` et log l'opération dans `./backups/.log`.
+
+Après une première lecture du code, il ne semble pas y avoir de fonctions vulnerable à exploiter. C'est donc sans doute plus un level ou il faut trouver comment exploiter la logique et trouver une faille.
+
+---
+
+### 2. Tentative naïve
+
+J'ai d'abord tenté de lire le mot de passe du niveau suivant avec :
+```sh
+./level08 /home/user/level09/.pass
+```
+Mais cela échoue : le programme tente de créer le fichier de destination dans `./backups/` en concaténant le chemin, ce qui donne :
+```
+./backups//home/user/level09/.pass
+```
+Ce chemin n'existe pas, et le programme ne peut pas écrire à cet endroit.
+
+---
+
+### 3. Comprendre la faille
+
+Le programme ne vérifie pas si l'argument contient des `..` (parent directory) ou des `/`.  
+Il construit simplement le chemin de destination avec :
+```c
+strcpy(dest, "./backups/");
+strncat(dest, argv[1], ...);
+```
+Donc, si on fournit un argument comme `../home/user/level09/.pass`, le chemin de destination devient :
+```
+./backups/../home/user/level09/.pass
+```
+On tente donc `./level08 ../../../home/users/level09/.pss`.
+Ce qui, après résolution des chemins relatifs, pointe vers `./home/user/level09/.pass` à partir du répertoire courant. Mais alors on tentera d'ecrire dams /home. Ors nous n'avons pas les droits.
+
+
+---
+
+### 4. Exploitation via /tmp
+
+Tous les utilisateurs peuvent écrire dans `/tmp`.  
+L'idée est donc de :
+
+- Aller dans `/tmp`
+- Créer un dossier `backups` dans `/tmp` si besoin
+- Lancer le binaire depuis `/tmp` avec comme argument : `../home/user/level09/.pass`
+
+Exécution :
+```sh
+cd /tmp
+mkdir backups
+/home/user/level08/level08 ../home/user/level09/.pass
+```
+
+- Le programme va lire `/home/user/level09/.pass`.
+- Il va écrire la copie dans `/tmp/backups/../home/user/level09/.pass`, qui, après résolution, donne `/tmp/home/user/level09/.pass`.
+- On peut alors lire le fichier copié dans `/tmp/home/user/level09/.pass` :
+```sh
+cat /tmp/home/user/level09/.pass
+```
+
+---
+
+### 5. Résumé de l'approche
+
+- Le programme ne filtre pas les chemins relatifs dans l'argument.
+- On exploite cela pour faire sortir la copie du dossier `backups` et écrire où on veut (dans les limites des droits d'écriture).
+- En utilisant `/tmp`, on peut récupérer le contenu du fichier protégé.
+
+---
+
+**Conclusion** :  
+Ce niveau illustre l'importance de bien valider et nettoyer les chemins de fichiers fournis par l'utilisateur, pour éviter les attaques de type path traversal.
