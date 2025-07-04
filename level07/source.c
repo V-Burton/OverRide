@@ -4,7 +4,7 @@
 
 int get_unum()
 {
-  _DWORD v1[3]; // [esp+1Ch] [ebp-Ch] BYREF
+  _DWORD v1[3];
 
   v1[0] = 0;
   fflush(stdout);
@@ -15,7 +15,7 @@ int get_unum()
 
 int __cdecl read_number(int a1)
 {
-  int unum; // [esp+1Ch] [ebp-Ch]
+  int unum;
 
   printf(" Index: ");
   unum = get_unum();
@@ -25,8 +25,8 @@ int __cdecl read_number(int a1)
 
 int __cdecl store_number(int a1)
 {
-  unsigned int unum; // [esp+18h] [ebp-10h]
-  unsigned int v3; // [esp+1Ch] [ebp-Ch]
+  unsigned int unum;
+  unsigned int v3;
 
   printf(" Number: ");
   unum = get_unum();
@@ -48,14 +48,14 @@ int __cdecl store_number(int a1)
 
 int __cdecl main(int argc, const char **argv, const char **envp)
 {
-  _BYTE v6[400]; // [esp+24h] [ebp-1B8h] BYREF
-  int number; // [esp+1B4h] [ebp-28h]
-  char s[4]; // [esp+1B8h] [ebp-24h] BYREF
-  int v9; // [esp+1BCh] [ebp-20h]
-  int v10; // [esp+1C0h] [ebp-1Ch]
-  int v11; // [esp+1C4h] [ebp-18h]
-  int v12; // [esp+1C8h] [ebp-14h]
-  unsigned int v13; // [esp+1CCh] [ebp-10h]
+  _BYTE v6[400];
+  int number;
+  char s[4];
+  int v9;
+  int v10;
+  int v11;
+  int v12;
+  unsigned int v13;
 
   v13 = __readgsdword(0x14u);
   number = 0;

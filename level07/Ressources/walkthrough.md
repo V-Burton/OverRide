@@ -22,7 +22,12 @@ En convertissant ces valeurs en hexadécimal, on obtient des adresses intéressa
 - 110: 4160548852 = 0xF7FCEFF4
 - 114: 4158936339 = 0xF7E45513
 
-En testant dans gdb, on voit que l'adresse 0xF7E45513 correspond à `__libc_start_main+243`, soit l'adresse de retour du programme à la fin du main.
+En testant dans gdb:
+```c
+(gdb) x/i 0xf7e45513
+   0xf7e45513 <__libc_start_main+243>:  mov    %eax,(%esp)
+```
+on voit que l'adresse 0xF7E45513 correspond à `__libc_start_main+243`, soit l'adresse de retour du programme à la fin du main.
 
 ### 3. Exploitation : écriture hors limites
 

@@ -8,19 +8,17 @@ unsigned int get_unum(void);
 void clear_stdin(void);
 
 int main(int argc, char** argv, char** envp) {
-    int storage[100];           // Tableau pour stocker les nombres
-    int command_result = 0;     // Résultat de la commande (0 = succès, autre = échec)
-    char command[20];           // Buffer pour la commande utilisateur
+    int storage[100];         
+    int command_result = 0;    
+    char command[20]; 
     
     memset(storage, 0, sizeof(storage));
     
-    // Nettoyage des arguments de ligne de commande (sécurité)
     for (char** arg = argv; *arg != NULL; arg++) {
         int len = strlen(*arg);
         memset(*arg, 0, len);
     }
     
-    // Nettoyage des variables d'environnement (sécurité)
     for (char** env = envp; *env != NULL; env++) {
         int len = strlen(*env);
         memset(*env, 0, len);
@@ -70,12 +68,7 @@ int main(int argc, char** argv, char** envp) {
     return 0;
 }
 
-/**
- * Fonction pour lire un nombre depuis le stockage
- * @param storage: pointeur vers le tableau de stockage
- * @return: 0 (succès)
- */
-int read_number(int* storage) {
+ad_number(int* storage) {
     unsigned int index;
     
     printf(" Index: ");
@@ -86,11 +79,7 @@ int read_number(int* storage) {
     return 0;
 }
 
-/**
- * Fonction pour stocker un nombre dans le stockage
- * @param storage: pointeur vers le tableau de stockage
- * @return: 0 si succès, 1 si erreur
- */
+
 int store_number(int* storage) {
     unsigned int number;
     unsigned int index;
@@ -113,10 +102,7 @@ int store_number(int* storage) {
     return 0;
 }
 
-/**
- * Fonction pour lire un nombre non signé depuis l'entrée standard
- * @return: le nombre lu
- */
+
 unsigned int get_unum(void) {
     unsigned int number = 0;
     

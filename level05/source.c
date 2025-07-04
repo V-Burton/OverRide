@@ -23,7 +23,6 @@ void main(void)
     } while (bVar1 != 0);
     if (~uVar2 - 1 <= local_14) {
       printf((char *)local_78);
-                    /* WARNING: Subroutine does not return */
       exit(0);
     }
     if (('@' < (char)local_78[local_14]) && ((char)local_78[local_14] < '[')) {

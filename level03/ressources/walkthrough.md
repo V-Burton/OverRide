@@ -12,8 +12,8 @@ Trouver le bon **mot de passe numérique** pour obtenir un shell (`/bin/sh`) via
 
 ```c
 printf("Password:");
-scanf("%d", &input);         // Entrée utilisateur (entier)
-test(input);                 // Comparaison avec une valeur fixe
+scanf("%d", &input);
+test(input);                 
 ```
 
 ### `test`
@@ -24,9 +24,9 @@ void test(int input) {
     int diff = secret - input;
 
     if (diff <= 21) {
-        decrypt(diff);      // Appel de decrypt avec diff
+        decrypt(diff);
     } else {
-        decrypt(rand());    // Sinon, appel avec valeur aléatoire
+        decrypt(rand());
     }
 }
 ```
@@ -110,6 +110,4 @@ $ whoami
 level04
 ```
 
----
 
-**GG! Tu viens de terminer le Level03.** 🎉
